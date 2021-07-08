@@ -1,0 +1,62 @@
+{
+  "material": "magnetite",
+  "sizes": {
+    "distribution": {
+      "type": "lognormal",
+      "nbins": 30,
+      "shape": 1.0,
+      "location": 20.0,
+      "scale": 10.0,
+      "start": 20.0,
+      "end": 70
+    },
+    "unit": "nm"
+  },
+
+  "elongations": {
+    "distribution": {
+      "type": "lognormal",
+      "nbins": 30,
+      "shape": 1.0,
+      "location": 5,
+      "scale": 10.0,
+      "start": 5,
+      "end": 100
+    }
+  },
+
+  "directions": {
+    "distribution": {
+      "type": "fibonacci",
+      "nbins": 30
+    }
+  },
+
+  "applied_field": {
+    "strength": 30,
+    "direction": [1,0,0],
+    "unit": "uT"
+  },
+
+  "cooling_regime": {
+    "ambient_temperature": 15.00,
+    "initial_temperature": 579.999,
+    "reference_time": 6E1,
+    "temperature_at_reference_time": 15.15,
+    "allowable_percentage_drop": 0.1,
+    "stopping_temperature": 50
+  },
+
+  "outputs": {
+    "model": "/data/Dropbox/SD_Cooling/example_cooling1.csv",
+    "sizes": "/data/Dropbox/SD_Cooling/example_cooling_sizes1.csv",
+    "elongations": "/data/Dropbox/SD_Cooling/example_cooling_elongs1.csv",
+    "directions": "/data/Dropbox/SD_Cooling/example_directions1.csv",
+    "cooling_regime": "/data/Dropbox/SD_Cooling/example_cooling_regime1.csv"
+  },
+
+  "tau0": 1E-10,
+  "epsilon": 1E-15,
+  "n_polish": 0
+
+}

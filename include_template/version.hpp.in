@@ -1,0 +1,13 @@
+//
+// Created by L.Nagy on 01/04/2021.
+//
+
+#ifndef SD_COOLING_INCLUDE_TEMPLATE_VERSION_HPP
+#define SD_COOLING_INCLUDE_TEMPLATE_VERSION_HPP
+
+const char* GIT_REV = "${GIT_REV}${GIT_DIFF}";
+const char* GIT_TAG = "${GIT_TAG}";
+const char* GIT_BRANCH = "${GIT_BRANCH}";
+const char* GIT_VERSION = "Git info\nRevision: '${GIT_REV}${GIT_DIFF}'\nTag: '${GIT_TAG}'\nBranch: '${GIT_BRANCH}'";
+
+#endif //SD_COOLING_INCLUDE_TEMPLATE_VERSION_HPP
