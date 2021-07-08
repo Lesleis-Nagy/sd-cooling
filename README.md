@@ -50,7 +50,7 @@ model as opposed to displaying diagnostic information.
 ## JSON model file format
 An input file for the `cooling` utility is a JSON file with the following 
 format
-```json
+```
 {
     "material": <choice of "magnetite", "iron">,
     "sizes": <JSON fragment (see below)>,
@@ -86,7 +86,7 @@ format
 The sizes fragment should be either a list or a distribution of individual 
 sizes. The following fragment specifies a list where each size and the
 proportion of grains that make up an assembly of that size are specified
-```json
+```
 {
     "list": [
         {"value": <float>, "fraction": <float>},
@@ -102,7 +102,7 @@ proportion of grains at that size. Internally the values given for `fraction`
 are normalized so that they sum to unity.
 
 Alternatively we may specify a lognormal distribution for sizes
-```json
+```
 {
     "distribution": {
         "type": "lognormal",
@@ -134,7 +134,7 @@ drawn from a function. The list fragment is very similar to the list fragments
 for sizes and elongations, with the exception that the `value` field is now
 a triple of three floating point values as opposed to a scalar and the `unit`
 field is not required
-```json
+```
 {
     "list": [
         {"value": [<float>, <float>, <float>], "fraction": <float>},
@@ -148,7 +148,7 @@ Only one direction distribution function is currently supported called
 *fibonacci*. This function will uniformly sample the sphere in `nbins`
 directions and assign a fraction taken from a uniform distribution to each
 grain orientation. The JSON fragment should look like
-```json
+```
 {
     "distribution": {
         "type": "fibonacci",
