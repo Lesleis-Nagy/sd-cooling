@@ -1,0 +1,17 @@
+\documentclass[preview]{standalone}
+\usepackage[usenames]{color} %used for font color
+\usepackage{amssymb} %maths
+\usepackage{amsmath} %maths
+\usepackage[utf8]{inputenc} %useful to type directly diacritic characters
+\usepackage{bbold}
+\usepackage{xfrac}
+%\usepackage{stmaryrd}
+%\usepackage[eulermath]{classicthesis}
+\usepackage[cm]{sfmath}
+% some macros
+\newcommand{\vect}[1]{\ensuremath{\mathbb{#1}}}
+\begin{document}
+\begin{equation*}
+    T(t) = \left( T_0 - T_\mathrm{amb} \right) \exp\left( \frac{1}{t_0 - t_1}\log\left( \frac{T_1 - T_\mathrm{amb}}{T_0 - T_\mathrm{amb}}\left( t_0 - t \right) \right) \right)
+\end{equation*}
+\end{document}

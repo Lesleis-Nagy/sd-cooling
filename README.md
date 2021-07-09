@@ -121,7 +121,7 @@ value and `end` is the size range value. The other parameters: `shape`,
 `location` and `scale`, govern the log normal distribution from which values 
 are drawn as shown in the equation
 
-$$ f(x) = \left( \frac{1}{\sqrt{2\pi} \cdot \mathrm{shape} \cdot \left( x - \mathrm{location} \right)} \right)\exp{\left[ \left( -\frac{1}{2 \cdot \mathrm{shape}^2} \right)\log^2{\left[ \frac{x - \mathrm{location}}{\mathrm{scale}} \right]} \right]}. $$
+<img src="doc/images/lognormal/lognormal.png" alt="Lognormal" width="70%"/>
 
 ### JSON elongations fragment
 
@@ -159,12 +159,14 @@ grain orientation. The JSON fragment should look like
 
 ### JSON cooling\_regime fragment
 The `cooling_regime` fragment tells us how quickly a sample cools. It follows 
-the Newtonian cooling rate equation (Equation 16) where
+the Newtonian cooling rate equation
 
-* `ambient_temperature` is identified with $T_\mathrm{amb}$,
-* `initial_temperature` is identified with $T_0$,
-* `reference_time` is identified with $t_1$,
-* `temperature_at_reference_time` is identified with $T_1$,
+<img src="doc/images/newton-cooling/newton-cooling.png" alt="Newton cooling" width="70%"/>
+
+* `ambient_temperature` is identified with T<sub>amb</sub>,
+* `initial_temperature` is identified with T<sub>0</sub>,
+* `reference_time` is identified with t<sub>1</sub>,
+* `temperature_at_reference_time` is identified with T<sub>1</sub>,
 * `allowable_percentage_drop` is the maximum allowed drop in temperature
   (as a fraction) for each time step - this quantity governs the time step
   at which we calculate energy barriers.
@@ -192,13 +194,12 @@ model has completed execution.
 ### JSON other fields
 The only other fields in a model JSON input are 
 
-* `tau0` which is the magnetic reordering time usually taken to be $10^{-9}$
-  or $10^{-10}$ seconds,
+* `tau0` which is the magnetic reordering time usually taken to be 1E-9 or 
+  1E-10 seconds,
 * `epsilon` a value used to check whether floating point quantities in the code
   are sufficiently close to zero (this does not affect multiprecision routines).
 * `n_polish` the number of Newton-Raphson polishing steps used when finding 
-  roots to the Stoner-Wohlfarth equation (usually zero since this doesn't seem
-  to have any effect).
+  roots to the Stoner-Wohlfarth equation (usually zero).
 
 ## JSON model file examples
 

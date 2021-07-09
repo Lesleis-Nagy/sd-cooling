@@ -1,0 +1,17 @@
+\documentclass[preview]{standalone}
+\usepackage[usenames]{color} %used for font color
+\usepackage{amssymb} %maths
+\usepackage{amsmath} %maths
+\usepackage[utf8]{inputenc} %useful to type directly diacritic characters
+\usepackage{bbold}
+\usepackage{xfrac}
+%\usepackage{stmaryrd}
+%\usepackage[eulermath]{classicthesis}
+\usepackage[cm]{sfmath}
+% some macros
+\newcommand{\vect}[1]{\ensuremath{\mathbb{#1}}}
+\begin{document}
+\begin{equation*}
+f(x) = \left( \frac{1}{\sqrt{2\pi} \cdot \mathrm{shape} \cdot \left( x - \mathrm{location} \right)} \right)\exp{\left[ \left( -\frac{1}{2 \cdot \mathrm{shape}^2} \right)\log^2{\left[ \frac{x - \mathrm{location}}{\mathrm{scale}} \right]} \right]}
+\end{equation*}
+\end{document}
