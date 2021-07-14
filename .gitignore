@@ -8,6 +8,15 @@ build
 # Mac OSX
 .DS_Store
 
+# CLion IDEA project directory
+.idea
+
+# CLion build directory (debug)
+cmake-build-debug
+
+# CLion build directory (release)
+cmake-build-release
+
 #####################
 # Files             #
 #####################
