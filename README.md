@@ -40,6 +40,18 @@ make
 This command should result in an executable called `cooling` in the
 `<build-dir>/src_cmdline/cooling` directory. 
 
+### Installation
+By default, CMake generates an installation prefix when executing the `make install` command which attempts to 
+install `sd-cooling` to `/usr/local`. This may be changed by setting the CMake variable `CMAKE_INSTALL_PREFIX` to an
+alternative installation directory
+```bash
+  $> cmake <args> -DCMAKE_INSTALL_PREFIX=<my-installation-prefix> <source-dir>
+```
+The `sd-cooling` utility may then be installed in the usual way
+```bash
+  $> make install
+```
+
 ## OSX
 In order to compile on OSX/Apple systems we recommend first installing XCode
 ([https://developer.apple.com/xcode/](https://developer.apple.com/xcode/))
