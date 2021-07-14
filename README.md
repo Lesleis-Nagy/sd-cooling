@@ -4,9 +4,11 @@ temperature, grain size & shape, field strength and direction. It uses simple
 single domain Stoner-Wohlfarth grains.
 
 # Compilation
-This code can be compiled on linux Ubuntu (version 20.04.2 LTS) using the CMake
-([https://cmake.org](https://cmake.org)) crossplatform make utility (minimum
-version 3.17).  Additionally this code requires the Boost
+
+## Linux/Unix.
+This code can be compiled on linux (specifically Ubuntu version 20.04.2 LTS)
+using the CMake ([https://cmake.org](https://cmake.org)) crossplatform make
+utility (minimum version 3.17).  Additionally this code requires the Boost
 ([https://boost.org](https://boost.org)) library with `program-options` to be
 compiled and available on the build system. The current version of the code has
 been compiled with Boost version 1.76.0.
@@ -37,6 +39,24 @@ make
 ```
 This command should result in an executable called `cooling` in the
 `<build-dir>/src_cmdline/cooling` directory. 
+
+## OSX
+In order to compile on OSX/Apple systems we recommend first installing XCode
+([https://developer.apple.com/xcode/](https://developer.apple.com/xcode/))
+along with the command line tools which is available free from Apple and can be
+fond in the AppStore.
+
+Next we need to install [CMake](https://cmake.org) and the
+[Boost](https://boost.org), which we can do using homebrew
+([https://brew.sh/](https://brew.sh/)). Once Homebrew is successfully
+installed, we can execute the following commands
+```bash
+    $> brew install cmake
+    $> brew install boost
+```
+
+This should set up the system to build `sd-cooling` in the manner described
+above.
 
 # Usage
 The `cooling` utility can be called from the command line
