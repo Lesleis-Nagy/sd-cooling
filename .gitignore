@@ -1,3 +1,17 @@
-# Directories
+##################### 
+# Directories       #
+#####################
+
+# General
 build
+
+# Mac OSX
 .DS_Store
+
+#####################
+# Files             #
+#####################
+
+# LaTeX
+*.aux
+*.log
