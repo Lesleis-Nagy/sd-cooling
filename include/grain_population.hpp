@@ -18,6 +18,7 @@ public:
     virtual void update_field_and_temperature(Real H, Real hx, Real hy, Real hz, Real T) = 0;
     virtual void equilibrate() = 0;
 
+    [[nodiscard]] virtual Vector3D  population_magnetization_no_project(bool with_ms) const = 0;
     [[nodiscard]] virtual Real population_magnetization(bool with_ms) const = 0;
     [[nodiscard]] virtual Real equilibrium_magnetization(bool with_ms) const = 0;
 

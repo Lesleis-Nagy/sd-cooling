@@ -1,0 +1,178 @@
+sample-name: VSYNTH
+material: magnetite
+geometry:
+    type: ellipsoid
+    size: 100
+    size-unit: nm
+    elongation: 20
+outputs:
+    trm-acquisition-protocol: /home/lnagy2/trm-acquisition-100nm-20pc.csv
+    lab-demag-protocol: /home/lnagy2/lab-demag-100nm-20pc.csv
+    raw-simulation-data: /home/lnagy2/raw-simulation-100nm-20pc.csv
+trm-acquisition:
+    allowable-fractional-drop: 0.001
+    ambient-temperature: 20.0
+    initial-temperature: 579.9999
+    temperature-at-t1: 20.15
+    t1: 6.0E+09
+    field:
+        strength: 30
+        unit: uT
+        direction: [1, 1, 1]
+lab-demag-protocol:
+    allowable-fractional-drop: 0.001
+    defaults:
+        ambient-temperature: 20.0
+        stop-temperature: 20.15
+        heating-time: 1800
+        bake-time: 2400
+        cool-time: 1800
+        field:
+            strength: 30
+            unit: uT
+            direction: [1, 1, 1]
+    steps:
+        -
+            type: zero-field
+            bake-temperature: 50
+        -
+            type: zero-field
+            bake-temperature: 100
+        -
+            type: in-field
+            bake-temperature: 100
+        -
+            type: zero-field
+            bake-temperature: 150
+        -
+            type: in-field
+            bake-temperature: 150
+        -
+            type: zero-field
+            bake-temperature: 175
+        -
+            type: in-field
+            bake-temperature: 175
+        -
+            type: pTRM-tail-check
+            bake-temperature: 175
+        -
+            type: zero-field
+            bake-temperature: 200
+        -
+            type: pTRM-check
+            bake-temperature: 150
+        -
+            type: zero-field
+            bake-temperature: 200
+        -
+            type: in-field
+            bake-temperature: 200
+        -
+            type: zero-field
+            bake-temperature: 250
+        -
+            type: in-field
+            bake-temperature: 250
+        -
+            type: zero-field
+            bake-temperature: 275
+        -
+            type: in-field
+            bake-temperature: 275
+        -
+            type: pTRM-tail-check
+            bake-temperature: 275
+        -
+            type: zero-field
+            bake-temperature: 300
+        -
+            type: pTRM-check
+            bake-temperature: 250
+        -
+            type: zero-field
+            bake-temperature: 300
+        -
+            type: in-field
+            bake-temperature: 300
+        -
+            type: zero-field
+            bake-temperature: 350
+        -
+            type: in-field
+            bake-temperature: 350
+        -
+            type: zero-field
+            bake-temperature: 375
+        -
+            type: in-field
+            bake-temperature: 375
+        -
+            type: pTRM-tail-check
+            bake-temperature: 375
+        -
+            type: zero-field
+            bake-temperature: 400
+        -
+            type: pTRM-check
+            bake-temperature: 350
+        -
+            type: zero-field
+            bake-temperature: 400
+        -
+            type: in-field
+            bake-temperature: 400
+        -
+            type: zero-field
+            bake-temperature: 450
+        -
+            type: in-field
+            bake-temperature: 450
+        -
+            type: zero-field
+            bake-temperature: 475
+        -
+            type: in-field
+            bake-temperature: 475
+        -
+            type: pTRM-tail-check
+            bake-temperature: 475
+        -
+            type: zero-field
+            bake-temperature: 500
+        -
+            type: pTRM-check
+            bake-temperature: 450
+        -
+            type: zero-field
+            bake-temperature: 500
+        -
+            type: in-field
+            bake-temperature: 500
+        -
+            type: zero-field
+            bake-temperature: 550
+        -
+            type: in-field
+            bake-temperature: 550
+        -
+            type: zero-field
+            bake-temperature: 575
+        -
+            type: in-field
+            bake-temperature: 575
+        -
+            type: pTRM-tail-check
+            bake-temperature: 575
+        -
+            type: zero-field
+            bake-temperature: 560
+        -
+            type: in-field
+            bake-temperature: 560
+        -
+            type: zero-field
+            bake-temperature: 570
+        -
+            type: in-field
+            bake-temperature: 570

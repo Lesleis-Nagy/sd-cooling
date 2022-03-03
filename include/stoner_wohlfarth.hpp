@@ -528,6 +528,15 @@ public:
     }
 
     /**
+     * Compute the population magnetization vector without projection on to the applied field.
+     * @param with_ms include the temperature dependent spontaneous magnetization.
+     * @return the population magnetization vector.
+     */
+    [[nodiscard]] Vector3D population_magnetization_no_project(bool with_ms) const override {
+        return _magnetization_no_project(with_ms, POPULATION_MAGNETIZATION);
+    }
+
+    /**
      * Compute the population magnetization.
      * @param with_ms include the temperature dependent spontaneous magnetization.
      * @return the scalar projection of the population magnetization on to the applied field.
@@ -1162,7 +1171,8 @@ private:
         }
     }
 
-    [[nodiscard]] Real _magnetization(bool with_ms, int magnetization_type) const {
+    [[nodiscard]] Vector3D _magnetization_no_project(bool with_ms, int magnetization_type) const {
+
         // Calculate a 3D magnetization vector from the theta values, and the equilibrium distribution.
 
         Vector3D m = {0.0, 0.0, 0.0};
@@ -1211,6 +1221,12 @@ private:
         if (with_ms) {
             m = _ms(_temperature) * m;
         }
+
+        return m;
+    }
+
+    [[nodiscard]] Real _magnetization(bool with_ms, int magnetization_type) const {
+        Vector3D m = _magnetization_no_project(with_ms, magnetization_type);
 
         // Return the projection of the accumulated m on to the applied field.
         return scalar_proj(_h, m);

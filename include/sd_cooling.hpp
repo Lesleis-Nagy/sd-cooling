@@ -9,6 +9,7 @@
 #include <vector>
 #include <algorithm>
 #include <numeric>
+#include <memory>
 
 #include "constants.hpp"
 #include "basic_types.hpp"
@@ -172,6 +173,19 @@ public:
                     gp.grain_population->update_rho(dt);
                 }
         );
+    }
+
+    [[nodiscard]] Vector3D population_magnetization_no_project(bool with_ms) const {
+        Vector3D result = {0.0, 0.0, 0.0};
+
+        for (const auto &gp : _grain_population_fractions) {
+            Vector3D m = gp.grain_population->population_magnetization_no_project(with_ms);
+            result[0] += gp.fraction * m[0];
+            result[1] += gp.fraction * m[1];
+            result[2] += gp.fraction * m[2];
+        }
+
+        return result;
     }
 
     [[nodiscard]] Real population_magnetization(bool with_ms) const {

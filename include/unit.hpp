@@ -10,10 +10,23 @@
 #include <basic_types.hpp>
 #include <constants.hpp>
 
+#include <boost/format.hpp>
+
+#include <nlohmann/json.hpp>
+#include <utility>
+
 class UnknownUnitException : public std::exception {
-  [[nodiscard]] const char *what() const noexcept override {
-	return "Unknown unit.";
-  }
+public:
+    explicit UnknownUnitException(std::string unit) {
+        _message = boost::str(boost::format("Unknown unit '%1%'.") % unit);
+    }
+
+    [[nodiscard]] const char *what() const noexcept override {
+	    return _message.c_str();
+    }
+
+private:
+    std::string _message;
 };
 
 Real field_to_amps_per_meter(Real h, const std::string &unit) {
@@ -28,7 +41,7 @@ Real field_to_amps_per_meter(Real h, const std::string &unit) {
   } else if (unit == "nT") {
 	return (h * 1E-9) / mu0;
   } else {
-	throw UnknownUnitException();
+	throw UnknownUnitException(unit);
   }
 }
 
@@ -44,7 +57,7 @@ Real size_to_meter(Real s, const std::string &unit) {
   } else if (unit == "nm") {
 	return s * 1E-9;
   } else {
-	throw UnknownUnitException();
+	throw UnknownUnitException(unit);
   }
 }
 

@@ -7,11 +7,15 @@
 
 #include <vector>
 
+#include <boost/format.hpp>
+
 #include "nlohmann/json.hpp"
 
 #include "basic_types.hpp"
 #include "temperature.hpp"
 #include "debug.hpp"
+
+#include "models/monodispertion_complex_protocol.hpp"
 
 struct TemperatureAndFieldStep {
     Real time;
@@ -21,204 +25,137 @@ struct TemperatureAndFieldStep {
     Real field_x_direction;
     Real field_y_direction;
     Real field_z_direction;
+    Real step_bake_temperature;
+    int step_type_index;
+    std::string notes;
 };
 
 typedef std::vector<TemperatureAndFieldStep> TemperatureAndFieldStepList;
 
-TemperatureAndFieldStepList
-izzi_experiment(
-        Real lab_ambient_temperature,
-        Real lab_cooled_temperature,
-        Real lab_heating_time,
-        const std::vector<Real>& lab_bake_temperatures,
-        Real lab_bake_time,
-        Real lab_cooling_time,
-        Real lab_field_strength,
-        const std::string& field_unit,
-        Real lab_field_x_direction,
-        Real lab_field_y_direction,
-        Real lab_field_z_direction,
-        Real allowable_fractional_drop
+std::pair<TemperatureAndFieldStepList, TemperatureAndFieldStepList> simulation_protocol_steps(
+    const Protocol &input_protocol
 ) {
-    std::vector<Real> field_strengths{field_to_amps_per_meter(lab_field_strength, field_unit), 0.0};
-    TemperatureAndFieldStepList protocol;
+    using boost::format;
+    using boost::str;
+
+    TemperatureAndFieldStepList trm_acquisition_protocol;
+    TemperatureAndFieldStepList lab_demag_protocol;
     Real t = 0;
-    for (long double bake_temperature : lab_bake_temperatures) {
-        for (Real field_strength : field_strengths) {
-            // Heating step.
-            Real stop_time = t + lab_heating_time;
-            auto tfun_heat = linear_temperature_function(t, lab_cooled_temperature, stop_time, bake_temperature);
-            auto dtfun_heat = d_linear_temperature_function_dt(t, lab_cooled_temperature, stop_time, bake_temperature);
-            while (t < stop_time) {
-                Real dt = abs((allowable_fractional_drop * tfun_heat(t)) / dtfun_heat(t));
-                protocol.push_back({
-                    t, tfun_heat(t), dt, field_strength,
-                    lab_field_x_direction, lab_field_y_direction, lab_field_z_direction
-                });
-                t += dt;
-            }
-            // Fix up the last entry value.
-            auto& last_entry = protocol.back();
-            last_entry.delta_time = stop_time - last_entry.time;
-            // Add entry to account for stop time.
-            protocol.push_back({
-                stop_time,
-                bake_temperature,
-                lab_bake_time,
-                field_strength,
-                lab_field_x_direction,
-                lab_field_y_direction,
-                lab_field_z_direction
+
+    // Add the acquisition part.
+    auto cool_fun = newtonian_temperature_function(
+            input_protocol.trm_acquisition.ambient_temperature,
+            input_protocol.trm_acquisition.initial_temperature,
+            input_protocol.trm_acquisition.temperature_at_t1,
+            input_protocol.trm_acquisition.t1
+    );
+
+    auto d_cool_fun_dt = d_newtonian_temperature_function_dt(
+            input_protocol.trm_acquisition.ambient_temperature,
+            input_protocol.trm_acquisition.initial_temperature,
+            input_protocol.trm_acquisition.temperature_at_t1,
+            input_protocol.trm_acquisition.t1
+    );
+
+    Real time = 0;
+    Real temperature = input_protocol.trm_acquisition.initial_temperature;
+
+    while (input_protocol.trm_acquisition.temperature_at_t1 < temperature) {
+        temperature = cool_fun(time);
+        Real delta_time = std::abs(input_protocol.trm_acquisition.allowable_fractional_drop * temperature / d_cool_fun_dt(time));
+        trm_acquisition_protocol.push_back({time,
+                                            temperature,
+                                            delta_time,
+                                            input_protocol.trm_acquisition.field.strength,
+                                            input_protocol.trm_acquisition.field.x_direction,
+                                            input_protocol.trm_acquisition.field.y_direction,
+                                            input_protocol.trm_acquisition.field.z_direction,
+                                            0.0,
+                                            0,
+                                            "TRM ACQUISITION"});
+        time += delta_time;
+    }
+
+    // Add the cooling part.
+    for (const auto& step : input_protocol.lab_demag_protocol.steps) {
+        // Heating step.
+        Real stop_time = t + step.heating_time;
+        auto tfun_heat = linear_temperature_function(t, step.stop_temperature, stop_time, step.bake_temperature);
+        auto dtfun_heat = d_linear_temperature_function_dt(t, step.stop_temperature, stop_time, step.bake_temperature);
+        while (t < stop_time) {
+            Real dt = abs((input_protocol.lab_demag_protocol.allowable_fractional_drop * tfun_heat(t)) / dtfun_heat(t));
+            lab_demag_protocol.push_back({t,
+                                          tfun_heat(t),
+                                          dt,
+                                          step.field.strength,
+                                          step.field.x_direction,
+                                          step.field.y_direction,
+                                          step.field.z_direction,
+                                          step.bake_temperature,
+                                          step.type_index,
+                                          str(format("DEMAG STEP - HEATING - %1%") % step.type)
             });
+            t += dt;
+        }
 
-            // Roll t forward by ex_bake_time.
-            t = stop_time + lab_bake_time;
+        // Fix up the last entry value.
+        auto& last_entry = lab_demag_protocol.back();
+        last_entry.delta_time = stop_time - last_entry.time;
 
-            // Cooling step.
-            stop_time = t + lab_cooling_time;
-            auto tfun_cool = newtonian_temperature_function(
-                    lab_ambient_temperature, t, bake_temperature, stop_time, lab_cooled_temperature);
-            auto dtfun_cool = d_newtonian_temperature_function_dt(
-                    lab_ambient_temperature, t, bake_temperature, stop_time, lab_cooled_temperature);
-            while (t < stop_time) {
-                Real dt = std::abs((allowable_fractional_drop * tfun_cool(t)) / dtfun_cool(t));
-                protocol.push_back({
-                    t, tfun_cool(t), dt, field_strength,
-                    lab_field_x_direction, lab_field_y_direction, lab_field_z_direction
-                });
-                t += dt;
-            }
-        }
-    }
-    return protocol;
-}
+        // Add entry to account for stop time.
+        lab_demag_protocol.push_back({stop_time,
+                                      step.bake_temperature,
+                                      step.bake_time,
+                                      step.field.strength,
+                                      step.field.x_direction,
+                                      step.field.y_direction,
+                                      step.field.z_direction,
+                                      step.bake_temperature,
+                                      step.type_index,
+                                      str(format("DEMAG STEP - BAKING - %1%") % step.type)
+        });
 
-TemperatureAndFieldStepList
-izzi_experiment_from_json(const nlohmann::json &lab_demagnetising_regime) {
-    Real field_strength = 0;
-    Real field_x_direction = 0;
-    Real field_y_direction = 0;
-    Real field_z_direction = 0;
-    std::string field_unit = "";
-    Real ambient_temperature = 0;
-    Real cooled_temperature = 0;
-    Real heating_time = 0;
-    std::vector<Real> baking_temperatures;
-    Real bake_time;
-    Real cooling_time;
-    Real allowable_percentage_drop = 0.1/100.0;
-    if (lab_demagnetising_regime.contains("applied_field")) {
-        auto applied_field = lab_demagnetising_regime["applied_field"];
-        if (!applied_field.contains("strength")) {
-            throw std::runtime_error("Program JSON, IZZI regime 'applied_field'.'strength' missing");
+        // Roll t forward by ex_bake_time.
+        t = stop_time + step.bake_time;
+
+        // Cooling step.
+        stop_time = t + step.cool_time;
+        auto tfun_cool = newtonian_temperature_function(
+                step.ambient_temperature, t, step.bake_temperature, stop_time, step.stop_temperature);
+        auto dtfun_cool = d_newtonian_temperature_function_dt(
+                step.ambient_temperature, t, step.bake_temperature, stop_time, step.stop_temperature);
+        while (t < stop_time) {
+            Real dt = std::abs((input_protocol.lab_demag_protocol.allowable_fractional_drop * tfun_cool(t)) / dtfun_cool(t));
+            lab_demag_protocol.push_back({t,
+                                          tfun_cool(t),
+                                          dt,
+                                          step.field.strength,
+                                          step.field.x_direction,
+                                          step.field.y_direction,
+                                          step.field.z_direction,
+                                          step.bake_temperature,
+                                          step.type_index,
+                                          str(format("DEMAG STEP - COOLING - %1%") % step.type)
+            });
+            t += dt;
         }
-        if (!applied_field.contains("direction")) {
-            throw std::runtime_error("Program JSON, IZZI regime 'applied_field'.'direction' missing");
-        }
-        if (applied_field["direction"].size() != 3) {
-            throw std::runtime_error("Program JSON, IZZI regime 'applied_field'.'direction' has 3 elements");
-        }
-        if (!applied_field.contains("unit")) {
-            throw std::runtime_error("Program JSON, IZZI regime 'applied_field'.'unit' missing");
-        }
-        field_strength = applied_field["strength"];
-        field_x_direction = applied_field["direction"][0];
-        field_y_direction = applied_field["direction"][1];
-        field_z_direction = applied_field["direction"][2];
-        field_unit = applied_field["unit"];
-    } else {
-        throw std::runtime_error("Program JSON, IZZI regime has no 'applied_field'");
-    }
-    if (lab_demagnetising_regime.contains("ambient_temperature")) {
-        ambient_temperature = lab_demagnetising_regime["ambient_temperature"];
-    } else {
-        throw std::runtime_error("Program JSON, IZZI regime, 'ambient_temperature' is missing");
-    }
-    if (lab_demagnetising_regime.contains("cooled_temperature")) {
-        cooled_temperature = lab_demagnetising_regime["cooled_temperature"];
-    } else {
-        throw std::runtime_error("Program JSON, IZZI regime, 'cooled_temperature' is missing");
-    }
-    if (lab_demagnetising_regime.contains("heating_time")) {
-        heating_time = lab_demagnetising_regime["heating_time"];
-    } else {
-        throw std::runtime_error("Program JSON, IZZI regime, 'heating_time' is missing");
-    }
-    if (lab_demagnetising_regime.contains("baking_temperatures")) {
-        for (Real baking_temperature : lab_demagnetising_regime["baking_temperatures"]) {
-            baking_temperatures.push_back(baking_temperature);
-        }
-    } else {
-        throw std::runtime_error("Program JSON, IZZI regime, 'baking_temperatures' is missing");
-    }
-    if (lab_demagnetising_regime.contains("bake_time")) {
-        bake_time = lab_demagnetising_regime["bake_time"];
-    } else {
-        throw std::runtime_error("Program JSON, IZZI regime, 'bake_time' is missing");
-    }
-    if (lab_demagnetising_regime.contains("cooling_time")) {
-        cooling_time = lab_demagnetising_regime["cooling_time"];
-    } else {
-        throw std::runtime_error("Program JSON, IZZI regime, 'cooling_time' is missing");
-    }
-    if (lab_demagnetising_regime.contains("allowable_percentage_drop")) {
-        allowable_percentage_drop = (Real)lab_demagnetising_regime["allowable_percentage_drop"]/100.0;
-    } else {
-        throw std::runtime_error("Program JSON, IZZI regime, 'allowable_percentage_drop' is missing");
     }
 
-    DEBUG_MSG_SIMPLE_VAR(field_strength);
-    DEBUG_MSG_SIMPLE_VAR(field_x_direction);
-    DEBUG_MSG_SIMPLE_VAR(field_y_direction);
-    DEBUG_MSG_SIMPLE_VAR(field_z_direction);
-    DEBUG_MSG_SIMPLE_VAR(field_unit);
-    DEBUG_MSG_SIMPLE_VAR(ambient_temperature);
-    DEBUG_MSG_SIMPLE_VAR(cooled_temperature);
-    DEBUG_MSG_SIMPLE_VAR(heating_time);
-    DEBUG_MSG_STD_VECTOR(baking_temperatures);
-    DEBUG_MSG_SIMPLE_VAR(bake_time);
-    DEBUG_MSG_SIMPLE_VAR(cooling_time);
-    DEBUG_MSG_SIMPLE_VAR(allowable_percentage_drop);
-
-    return izzi_experiment(
-            ambient_temperature,
-            cooled_temperature,
-            heating_time,
-            baking_temperatures,
-            bake_time,
-            cooling_time,
-            field_strength,
-            field_unit,
-            field_x_direction,
-            field_y_direction,
-            field_z_direction,
-            allowable_percentage_drop);
-}
-
-TemperatureAndFieldStepList
-experiment_from_json(const nlohmann::json &json) {
-    TemperatureAndFieldStepList regime;
-
-    if (json.contains("lab_demagnetising_regime")) {
-        auto lab_demagnetising_regime = json["lab_demagnetising_regime"];
-        if (!lab_demagnetising_regime.contains("regime")) {
-            throw std::runtime_error("Program JSON, 'regime' missing from 'demagnetizing_regime'");
-        }
-        std::string regime = lab_demagnetising_regime["regime"];
-        if (regime == "IZZI") {
-            return izzi_experiment_from_json(lab_demagnetising_regime);
-        } else {
-            throw std::runtime_error("Program JSON, unknown demagnetising regime");
-        }
-    } else {
-        throw std::runtime_error("Program JSON doesn't contain 'lab_demagnetising_regime'");
-    }
+    return {trm_acquisition_protocol, lab_demag_protocol};
 }
 
 void save_experiment_regime(const TemperatureAndFieldStepList &regime, const std::string &file_name) {
     // Write data to file.
     std::ofstream fout;
     fout.open(file_name);
+
+    // Heading.
+    fout << "time (s)," << "temperature (C)," << "delta time (s)," << "field strength (A/m),"
+         << "field x direction," << "field y direction," << "field z direction,"
+         << "bake temperature (C)," << "record type," << "notes"
+         << std::endl;
+
+    // Records.
     for (auto &record : regime) {
         fout << std::setw(20) << std::setprecision(15) << record.time << ", ";
         fout << std::setw(20) << std::setprecision(15) << record.temperature << ", ";
@@ -226,9 +163,13 @@ void save_experiment_regime(const TemperatureAndFieldStepList &regime, const std
         fout << std::setw(20) << std::setprecision(15) << record.field_strength << ", ";
         fout << std::setw(20) << std::setprecision(15) << record.field_x_direction << ", ";
         fout << std::setw(20) << std::setprecision(15) << record.field_y_direction << ", ";
-        fout << std::setw(20) << std::setprecision(15) << record.field_z_direction;
+        fout << std::setw(20) << std::setprecision(15) << record.field_z_direction << ", ";
+        fout << std::setw(20) << std::setprecision(15) << record.step_bake_temperature << ", ";
+        fout << std::setw(20) << std::setprecision(15) << record.step_type_index << ", ";
+        fout << std::setw(20) << std::setprecision(15) << record.notes;
         fout << std::endl;
     }
+
     fout.close();
 }
 

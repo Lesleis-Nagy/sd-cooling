@@ -41,6 +41,13 @@ include_directories(${JSON_INCLUDE_DIRECTORIES})
 message(STATUS "JSON directories: ${JSON_INCLUDE_DIRECTORIES}")
 
 #
+# Set up RYAML library.
+#
+set(RYAML_INCLUDE_DIRECTORIES "${sd_cooling_THIRD_PARTY_DIR}/ryaml/include")
+include_directories(${RYAML_INCLUDE_DIRECTORIES})
+message(STATUS "RYAML directories: ${RYAML_INCLUDE_DIRECTORIES}")
+
+#
 # Build command line tools.
 #
 add_subdirectory(${sd_cooling_SRC_CMDLINE_DIR})
